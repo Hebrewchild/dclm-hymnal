@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DCLM Hymnal</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .hidden { display: none; }
+    .loading-icon {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #ffffff;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+  </style>
+</head>
+<body class="text-gray-900 font-sans">
+
+<!-- Loading Page -->
+<div id="loadingPage" class="flex flex-col items-center justify-center h-screen bg-blue-900 text-white">
+  <h1 class="text-4xl font-bold mb-4">DCLM Hymnal</h1>
+  <p class="mb-4 text-lg">Created by Hebrewchild</p>
+  <div class="loading-icon"></div>
+</div>
+
+<!-- Calculator Page -->
+<div id="calculatorPage" class="hidden flex flex-col items-center justify-center min-h-screen p-6 bg-blue-100">
+  <h2 class="text-3xl font-bold mb-4 text-blue-900">DCLM Hymns</h2>
+  <input id="hymnInput" type="text" class="mb-4 p-3 w-40 text-center border-2 border-blue-500 rounded-lg text-lg bg-white" placeholder="Hymn #" readonly>
+
+  <div class="grid grid-cols-3 gap-3 w-full max-w-xs mb-4">
+    <button onclick="appendHymn(1)" class="bg-blue-700 text-white text-lg p-2 rounded">1</button>
+    <button onclick="appendHymn(2)" class="bg-blue-700 text-white text-lg p-2 rounded">2</button>
+    <button onclick="appendHymn(3)" class="bg-blue-700 text-white text-lg p-2 rounded">3</button>
+    <button onclick="appendHymn(4)" class="bg-blue-700 text-white text-lg p-2 rounded">4</button>
+    <button onclick="appendHymn(5)" class="bg-blue-700 text-white text-lg p-2 rounded">5</button>
+    <button onclick="appendHymn(6)" class="bg-blue-700 text-white text-lg p-2 rounded">6</button>
+    <button onclick="appendHymn(7)" class="bg-blue-700 text-white text-lg p-2 rounded">7</button>
+    <button onclick="appendHymn(8)" class="bg-blue-700 text-white text-lg p-2 rounded">8</button>
+    <button onclick="appendHymn(9)" class="bg-blue-700 text-white text-lg p-2 rounded">9</button>
+    <button onclick="clearInput()" class="bg-red-500 text-white p-2 text-lg rounded col-span-2">Clear</button>
+    <button onclick="appendHymn(0)" class="bg-blue-700 text-white text-lg p-2 rounded">0</button>
+  </div>
+
+  <button onclick="loadHymn()" class="bg-green-600 text-white px-5 py-2 mb-4 rounded text-lg">Go</button>
+  <button onclick="toggleSearch()" class="text-blue-800 underline text-md mb-2">🔍 Search Index</button>
+
+  <!-- Search Box -->
+  <div id="searchBox" class="hidden mt-4 w-full max-w-md bg-white shadow-md p-4 rounded">
+    <input type="text" id="searchInput" class="w-full p-2 border border-blue-400 rounded mb-2" placeholder="Search by title, number, or lyrics" oninput="searchHymns()" />
+    <ul id="searchResults" class="text-left text-sm"></ul>
+  </div>
+</div>
+
+<!-- Lyrics Page -->
+<div id="lyricsPage" class="hidden min-h-screen bg-white p-6 flex flex-col justify-between">
+  <div class="text-center">
+    <h2 id="hymnTitle" class="text-2xl font-bold mb-4 text-blue-800">Hymn Title</h2>
+    <div class="flex justify-center gap-4 mb-6">
+      <button onclick="showLyrics()" class="bg-blue-600 text-white px-4 py-2 rounded">Lyrics</button>
+      <button onclick="showStory()" class="bg-purple-600 text-white px-4 py-2 rounded">Hymn Story</button>
+    </div>
+
+    <!-- Lyrics Box -->
+    <div id="hymnLyrics" class="whitespace-pre-line text-gray-800 text-lg mb-4 max-w-xl mx-auto p-6 bg-gray-100 shadow-md rounded-md">
+      Lyrics...
+    </div>
+
+    <!-- Story Box -->
+    <div id="hymnStory" class="whitespace-pre-line text-gray-800 text-md p-6 rounded-md hidden max-w-xl mx-auto bg-blue-50 shadow-inner border border-blue-200">
+      Story...
+    </div>
+  </div>
+
+  <div class="flex justify-between mt-6">
+    <button onclick="prevHymn()" class="bg-gray-700 text-white px-4 py-2 rounded">Previous</button>
+    <button onclick="goBack()" class="bg-yellow-500 text-white px-4 py-2 rounded">Home</button>
+    <button onclick="nextHymn()" class="bg-gray-700 text-white px-4 py-2 rounded">Next</button>
+  </div>
+</div>
+
+<script>
+  const hymns = {
+    1: {
+      title: "Hymn 1: All Hail the Power",
+      lyrics: "All hail the power of Jesus’ name!\nLet angels prostrate fall;\nBring forth the royal diadem,\nAnd crown Him Lord of all!",
+      story: "Written by Edward Perronet in the 18th century, this hymn is known as the 'National Anthem of Christendom'."
+    },
+    2: {
+      title: "Hymn 2: Amazing Grace",
+      lyrics: "Amazing grace! How sweet the sound\nThat saved a wretch like me!\nI once was lost, but now am found;\nWas blind, but now I see.",
+      story: "Penned by John Newton, a former slave trader, as a reflection on God's mercy after a life-threatening storm."
+    },
+    3: {
+      title: "Hymn 3: Rock of Ages",
+      lyrics: "Rock of Ages, cleft for me,\nLet me hide myself in Thee;\nLet the water and the blood,\nFrom Thy wounded side which flowed...",
+      story: "Composed by Augustus Toplady in 1763, emphasizing refuge in Christ's sacrifice."
+    }
+  };
+
+  let currentHymn = null;
+
+  function showPage(id) {
+    ['loadingPage', 'calculatorPage', 'lyricsPage'].forEach(pid => {
+      document.getElementById(pid).classList.add('hidden');
+    });
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  window.onload = () => {
+    setTimeout(() => showPage('calculatorPage'), 1500);
+  };
+
+  function appendHymn(num) {
+    const input = document.getElementById('hymnInput');
+    input.value += num;
+  }
+
+  function clearInput() {
+    document.getElementById('hymnInput').value = '';
+  }
+
+  function loadHymn(id = null) {
+    const input = document.getElementById('hymnInput');
+    const hymnId = id || parseInt(input.value);
+    if (hymns[hymnId]) {
+      currentHymn = hymnId;
+      const hymn = hymns[hymnId];
+      document.getElementById('hymnTitle').innerText = hymn.title;
+      document.getElementById('hymnLyrics').innerText = hymn.lyrics;
+      document.getElementById('hymnStory').innerText = hymn.story;
+      document.getElementById('hymnStory').classList.add('hidden');
+      document.getElementById('hymnLyrics').classList.remove('hidden');
+      showPage('lyricsPage');
+    } else {
+      alert("Hymn not found. Try 1, 2, or 3.");
+    }
+  }
+
+  function showLyrics() {
+    document.getElementById('hymnLyrics').classList.remove('hidden');
+    document.getElementById('hymnStory').classList.add('hidden');
+  }
+
+  function showStory() {
+    document.getElementById('hymnStory').classList.remove('hidden');
+    document.getElementById('hymnLyrics').classList.add('hidden');
+  }
+
+  function goBack() {
+    showPage('calculatorPage');
+  }
+
+  function nextHymn() {
+    if (hymns[currentHymn + 1]) {
+      document.getElementById('hymnInput').value = currentHymn + 1;
+      loadHymn(currentHymn + 1);
+    } else {
+      alert("No next hymn.");
+    }
+  }
+
+  function prevHymn() {
+    if (hymns[currentHymn - 1]) {
+      document.getElementById('hymnInput').value = currentHymn - 1;
+      loadHymn(currentHymn - 1);
+    } else {
+      alert("No previous hymn.");
+    }
+  }
+
+  function toggleSearch() {
+    document.getElementById('searchBox').classList.toggle('hidden');
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').innerHTML = '';
+  }
+
+  function searchHymns() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const resultBox = document.getElementById('searchResults');
+    resultBox.innerHTML = '';
+    if (!query) return;
+
+    Object.keys(hymns).forEach(id => {
+      const hymn = hymns[id];
+      if (
+        hymn.title.toLowerCase().includes(query) ||
+        hymn.lyrics.toLowerCase().includes(query) ||
+        id.includes(query)
+      ) {
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="#" onclick="loadHymn(${id})" class="text-blue-700 hover:underline">#${id}: ${hymn.title}</a>`;
+        resultBox.appendChild(li);
+      }
+    });
+
+    if (resultBox.innerHTML === '') {
+      resultBox.innerHTML = `<li class="text-red-600">No match found</li>`;
+    }
+  }
+</script>
+</body>
+</html>
